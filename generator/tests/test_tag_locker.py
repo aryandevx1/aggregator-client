@@ -1,7 +1,7 @@
 from .test_helpers import make_object, make_field
 from pathlib import Path
 from generator.tag_locker import TagLocker
-from generator.errors import TagLockFileParseError, TagLockFileNotFoundError
+from generator.errors import TagLockFileParseError, TagLockFileNotFoundError, TagLockFileCorruptError
 import json 
 
 def create_lock_file(
@@ -281,3 +281,170 @@ def test_invalid_json_raises_error(
         match="Invalid json syntax",
     ):
         TagLocker(lock_file).assign([])
+
+def test_empty_retired_tags_is_not_corrupt(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 3,
+                "fields": {
+                    "id": 1,
+                    "title": 2,
+                },
+                "retired_tags": [],
+            }
+        },
+    )
+
+    objects = [
+        make_object(
+            fields=[
+                make_field(name="id"),
+                make_field(name="title"),
+            ]
+        )
+    ]
+
+    TagLocker(file_path).assign(objects)
+
+    assert [field.tag for field in objects[0].fields] == [1, 2]
+
+def test_next_tag_conflicting_with_active_tag_raises_error(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 2,
+                "fields": {
+                    "id": 1,
+                    "title": 2,
+                },
+                "retired_tags": [],
+            }
+        },
+    )
+
+    with pytest.raises(
+        TagLockFileCorruptError,
+        match="'next_tag': 2",
+    ):
+        TagLocker(file_path).assign([])
+
+def test_next_tag_conflicting_with_retired_tag_raises_error(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 2,
+                "fields": {
+                    "id": 1,
+                },
+                "retired_tags": [2],
+            }
+        },
+    )
+
+    with pytest.raises(
+        TagLockFileCorruptError,
+        match="'next_tag': 2",
+    ):
+        TagLocker(file_path).assign([])
+
+def test_duplicate_active_tags_raise_error(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 3,
+                "fields": {
+                    "id": 1,
+                    "title": 1,
+                },
+                "retired_tags": [],
+            }
+        },
+    )
+
+    with pytest.raises(
+        TagLockFileCorruptError,
+        match="Duplicate tags found for object: Job",
+    ):
+        TagLocker(file_path).assign([])
+
+def test_active_tag_also_present_in_retired_tags_raises_error(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 3,
+                "fields": {
+                    "id": 1,
+                    "title": 2,
+                },
+                "retired_tags": [2],
+            }
+        },
+    )
+
+    with pytest.raises(
+        TagLockFileCorruptError,
+        match="Duplicate tags found for object: Job",
+    ):
+        TagLocker(file_path).assign([])
+
+def test_duplicate_retired_tags_raise_error(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 4,
+                "fields": {
+                    "id": 1,
+                },
+                "retired_tags": [2, 2],
+            }
+        },
+    )
+
+    with pytest.raises(
+        TagLockFileCorruptError,
+        match="Duplicate tags found for object: Job",
+    ):
+        TagLocker(file_path).assign([])
+
+def test_empty_object_entry_is_not_corrupt(
+    tmp_path: Path,
+) -> None:
+    file_path = create_lock_file(
+        tmp_path,
+        {
+            "Job": {
+                "next_tag": 1,
+                "fields": {},
+                "retired_tags": [],
+            }
+        },
+    )
+
+    TagLocker(file_path).assign([])
+
+    lock_data = read_lock_file(file_path)
+
+    assert lock_data["Job"] == {
+        "next_tag": 1,
+        "fields": {},
+        "retired_tags": [],
+    }

@@ -64,3 +64,7 @@ class TagLockFileWriteError(TagLockerError):
 
 class TagLockFileParseError(TagLockerError):
     """Raised when the tag lock file contains invalid JSON."""
+
+
+class TagLockFileCorruptError(TagLockerError): 
+    """Raised when the tag lock file is corrupted or manually edited."""
