@@ -11,36 +11,7 @@ from generator.errors import (
     EnumValidationError,
     ValidatorError
 )
-
-
-def make_field(
-    name: str = "title",
-    field_type: str = "string",
-    ref: str | None = None,
-    required: bool = False,
-    values: list[str] | None = None,
-    sensitive: bool = False,
-) -> Field:
-    return Field(
-        name=name,
-        type=field_type,
-        ref=ref,
-        values=values or [],
-        sensitive=sensitive,
-        required=required
-    )
-
-
-def make_object(
-    name: str = "Job",
-    kind: str = "entity",
-    fields: list[Field] | None = None,
-) -> Object:
-    return Object(
-        name=name,
-        kind=kind,
-        fields=fields or [],
-    )
+from .test_helpers import make_field, make_object
 
 def test_valid_schema_passes() -> None:
     objects = [
@@ -79,12 +50,12 @@ def test_valid_reference_and_composite_fields_pass() -> None:
             fields=[
                 make_field(
                     name="company",
-                    field_type="reference",
+                    type="reference",
                     ref="Company",
                 ),
                 make_field(
                     name="location",
-                    field_type="composite",
+                    type="composite",
                     ref="Address",
                 ),
             ],
@@ -178,7 +149,7 @@ def test_same_field_name_in_different_objects_passes() -> None:
     Validator().validate(objects)
 
 @pytest.mark.parametrize(
-    "field_type",
+    "type",
     [
         "string",
         "boolean",
@@ -187,15 +158,15 @@ def test_same_field_name_in_different_objects_passes() -> None:
         "timestamp",
     ],
 )
-def test_supported_simple_field_types_pass(
-    field_type: str,
+def test_supported_simple_types_pass(
+    type: str,
 ) -> None:
     objects = [
         make_object(
             fields=[
                 make_field(
                     name="value",
-                    field_type=field_type,
+                    type=type,
                 ),
             ],
         ),
@@ -213,7 +184,7 @@ def test_supported_simple_field_types_pass(
         "String",
     ],
 )
-def test_invalid_field_type_raises_error(
+def test_invalid_type_raises_error(
     invalid_type: str,
 ) -> None:
     objects = [
@@ -221,7 +192,7 @@ def test_invalid_field_type_raises_error(
             fields=[
                 make_field(
                     name="value",
-                    field_type=invalid_type,
+                    type=invalid_type,
                 ),
             ],
         ),
@@ -234,18 +205,18 @@ def test_invalid_field_type_raises_error(
         Validator().validate(objects)
 
 @pytest.mark.parametrize(
-    "field_type",
+    "type",
     ["reference", "composite"],
 )
 def test_reference_based_field_without_ref_raises_error(
-    field_type: str,
+    type: str,
 ) -> None:
     objects = [
         make_object(
             fields=[
                 make_field(
                     name="target",
-                    field_type=field_type,
+                    type=type,
                     ref=None,
                 ),
             ],
@@ -259,11 +230,11 @@ def test_reference_based_field_without_ref_raises_error(
         Validator().validate(objects)
 
 @pytest.mark.parametrize(
-    "field_type",
+    "type",
     ["reference", "composite"],
 )
 def test_unknown_reference_target_raises_error(
-    field_type: str,
+    type: str,
 ) -> None:
     objects = [
         make_object(
@@ -271,7 +242,7 @@ def test_unknown_reference_target_raises_error(
             fields=[
                 make_field(
                     name="target",
-                    field_type=field_type,
+                    type=type,
                     ref="MissingObject",
                 ),
             ],
@@ -285,7 +256,7 @@ def test_unknown_reference_target_raises_error(
         Validator().validate(objects)
 
 @pytest.mark.parametrize(
-    "field_type",
+    "type",
     [
         "string",
         "boolean",
@@ -295,10 +266,10 @@ def test_unknown_reference_target_raises_error(
         "enum",
     ],
 )
-def test_ref_on_unsupported_field_type_raises_error(
-    field_type: str,
+def test_ref_on_unsupported_type_raises_error(
+    type: str,
 ) -> None:
-    values = ["ACTIVE"] if field_type == "enum" else []
+    values = ["ACTIVE"] if type == "enum" else []
 
     objects = [
         make_object(name="Company"),
@@ -307,7 +278,7 @@ def test_ref_on_unsupported_field_type_raises_error(
             fields=[
                 make_field(
                     name="invalid",
-                    field_type=field_type,
+                    type=type,
                     ref="Company",
                     values=values,
                 ),
@@ -328,7 +299,7 @@ def test_object_can_reference_itself() -> None:
             fields=[
                 make_field(
                     name="parent",
-                    field_type="reference",
+                    type="reference",
                     ref="Category",
                 ),
             ],
@@ -343,7 +314,7 @@ def test_valid_enum_field_passes() -> None:
             fields=[
                 make_field(
                     name="status",
-                    field_type="enum",
+                    type="enum",
                     values=["OPEN", "CLOSED"],
                 ),
             ],
@@ -358,7 +329,7 @@ def test_enum_without_values_raises_error() -> None:
             fields=[
                 make_field(
                     name="status",
-                    field_type="enum",
+                    type="enum",
                     values=[],
                 ),
             ],
@@ -372,7 +343,7 @@ def test_enum_without_values_raises_error() -> None:
         Validator().validate(objects)
 
 @pytest.mark.parametrize(
-    "field_type",
+    "type",
     [
         "string",
         "boolean",
@@ -384,12 +355,12 @@ def test_enum_without_values_raises_error() -> None:
     ],
 )
 def test_values_on_non_enum_field_raises_error(
-    field_type: str,
+    type: str,
 ) -> None:
     referenced_objects = []
     ref = None
 
-    if field_type == "reference":
+    if type == "reference":
         ref = "Target"
         referenced_objects.append(
             make_object(
@@ -398,7 +369,7 @@ def test_values_on_non_enum_field_raises_error(
             ),
         )
 
-    elif field_type == "composite":
+    elif type == "composite":
         ref = "Target"
         referenced_objects.append(
             make_object(
@@ -412,7 +383,7 @@ def test_values_on_non_enum_field_raises_error(
             fields=[
                 make_field(
                     name="invalid",
-                    field_type=field_type,
+                    type=type,
                     ref=ref,
                     values=["A", "B"],
                 ),
@@ -432,7 +403,7 @@ def test_duplicate_enum_values_raise_error() -> None:
             fields=[
                 make_field(
                     name="status",
-                    field_type="enum",
+                    type="enum",
                     values=["OPEN", "CLOSED", "OPEN"],
                 ),
             ],

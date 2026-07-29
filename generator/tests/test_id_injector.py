@@ -1,4 +1,4 @@
-from .test_validator import make_object, make_field
+from .test_helpers import make_object, make_field
 from generator.id_injector import EntityIdInjector
 from generator.model import Field
 

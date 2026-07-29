@@ -3,7 +3,11 @@ from .model import Object, Field
 class EntityIdInjector: 
     _ID_FIELD_NAME = "id" 
     def _has_id_field(self, field_list: list[Field]) -> bool: 
-        return any(field.name == self._ID_FIELD_NAME for field in field_list)
+        for field in field_list: 
+            if field.name == self._ID_FIELD_NAME :
+                return True
+
+        return False
 
     def _create_id_field(self) -> Field: 
         return Field(
@@ -23,4 +27,4 @@ class EntityIdInjector:
             if self._has_id_field(obj.fields): 
                 continue
 
-            obj.fields.append(self._get_id_field())
+            obj.fields.append(self._create_id_field())

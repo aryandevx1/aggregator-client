@@ -1,6 +1,7 @@
 class LoaderError(Exception): 
     """Base exception for all schema loader errors."""
 
+
 class SchemaDirectoryError(LoaderError):
     """Raised when the schema directory is missing or invalid."""
 
@@ -32,11 +33,34 @@ class DuplicateFieldError(ValidatorError):
 class KindValidationError(ValidatorError): 
     """Raised when an invalid kind is encountered"""
 
+
 class TypeValidationError(ValidatorError): 
     """Raised when an invalid type is encountered"""
+
 
 class RefValidationError(ValidatorError): 
     """Raised when an invalid ref is encountered"""
 
+
 class EnumValidationError(ValidatorError): 
     """Raised when an invalid enum is encountered"""
+
+
+class TagLockerError(Exception):
+    """Base exception for tag-locking failures."""
+
+
+class TagLockFileNotFoundError(TagLockerError):
+    """Raised when the tag lock file does not exist."""
+
+
+class TagLockFileReadError(TagLockerError):
+    """Raised when the tag lock file cannot be read."""
+
+
+class TagLockFileWriteError(TagLockerError):
+    """Raised when the tag lock file cannot be written."""
+
+
+class TagLockFileParseError(TagLockerError):
+    """Raised when the tag lock file contains invalid JSON."""

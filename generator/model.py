@@ -8,6 +8,7 @@ class Field:
     required: bool
     values: list[str] = field(default_factory=list)
     sensitive: bool = False
+    tag: int | None = None
 
 @dataclass 
 class Object:
