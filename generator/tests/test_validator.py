@@ -43,6 +43,9 @@ def test_valid_reference_and_composite_fields_pass() -> None:
         make_object(
             name="Company",
             kind="entity",
+            fields=[
+                make_field()
+            ]
         ),
         make_object(
             name="Job",
@@ -112,6 +115,7 @@ def test_valid_object_kinds_pass(
         make_object(
             name="Example",
             kind=valid_kind,
+            fields=[make_field()]
         ),
     ]
 
@@ -272,7 +276,7 @@ def test_ref_on_unsupported_type_raises_error(
     values = ["ACTIVE"] if type == "enum" else []
 
     objects = [
-        make_object(name="Company"),
+        make_object(name="Company", fields=[make_field()]),
         make_object(
             name="Job",
             fields=[
@@ -366,6 +370,7 @@ def test_values_on_non_enum_field_raises_error(
             make_object(
                 name="Target",
                 kind="entity",
+                fields=[make_field()]
             ),
         )
 
@@ -375,6 +380,7 @@ def test_values_on_non_enum_field_raises_error(
             make_object(
                 name="Target",
                 kind="composite",
+                fields=[make_field()]
             ),
         )
     objects = referenced_objects + [
@@ -420,18 +426,18 @@ def test_validator_can_be_reused() -> None:
     validator = Validator()
 
     validator.validate([
-        make_object(name="Job"),
+        make_object(name="Job", fields=[make_field()]),
     ])
 
     validator.validate([
-        make_object(name="Company"),
+        make_object(name="Company", fields=[make_field()]),
     ])
 
 def test_same_schema_can_be_validated_twice() -> None:
     validator = Validator()
 
     objects = [
-        make_object(name="Job"),
+        make_object(name="Job", fields=[make_field()]),
     ]
 
     validator.validate(objects)
@@ -443,3 +449,10 @@ def test_empty_object_list() -> None:
         match="Schema must contain at least one object"
     ): 
         Validator().validate([])
+
+def test_empty_field_list() -> None: 
+    with pytest.raises(
+        ValidatorError,
+        match="Object must contain at least one field"
+    ): 
+        Validator().validate([make_object()])

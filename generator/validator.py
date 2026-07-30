@@ -155,6 +155,9 @@ class Validator:
         fields: list[Field],
         object_name: str,
     ) -> None:
+        if not fields: 
+            raise ValidatorError("Object must contain at least one field")
+
         self._validate_field_names(fields, object_name)
         self._validate_fields(fields, object_name)
 
