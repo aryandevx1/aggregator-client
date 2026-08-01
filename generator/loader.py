@@ -85,10 +85,16 @@ class Loader:
         values = field_data.get("values", [])
         sensitive = field_data.get("sensitive", False)
         required = field_data.get("required", False)
+        value_type = field_data.get("value_type")
 
         if ref is not None and not isinstance(ref, str): 
             raise SchemaStructureError(
                 f"'ref' at {location} must be a string"
+            )
+
+        if value_type is not None and not isinstance(value_type, str): 
+            raise SchemaStructureError(
+                f"'value_type' at {location} must be a string"
             )
 
         if not isinstance(values, list):
@@ -120,7 +126,8 @@ class Loader:
             ref=ref,
             values=enum_values,
             sensitive=sensitive,
-            required=required
+            required=required,
+            value_type=value_type
         )
 
     def _parse_object(self, yaml_data: dict, file_path: pathlib.Path) -> Object: 

@@ -245,3 +245,31 @@ def test_field_optional_properties_use_defaults(
     assert field.ref is None
     assert field.values == []
     assert field.sensitive is False
+
+def test_value_type_must_be_string(
+    tmp_path: Path,
+) -> None:
+    schema_data = {
+        "object": "User",
+        "kind": "entity",
+        "fields": [
+            {
+                "name": "emails",
+                "type": "array",
+                "value_type": 1
+            }
+        ],
+    }
+
+    schema_file = tmp_path / "user.yaml"
+    schema_file.write_text(
+        yaml.safe_dump(schema_data),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        SchemaStructureError, 
+        match="must be a string"
+    ): 
+        Loader(tmp_path).load()
+        

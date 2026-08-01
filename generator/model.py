@@ -14,6 +14,7 @@ class Field:
     values: list[EnumValue] = field(default_factory=list)
     sensitive: bool = False
     tag: int | None = None
+    value_type: str | None = None
 
 @dataclass 
 class Object:
