@@ -201,3 +201,247 @@ def test_timestamp_import_is_not_duplicated() -> None:
         "  google.protobuf.Timestamp updated_at = 2;\n"
         "}\n"
     )
+
+def test_generate_proto_with_enum_field() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="status",
+                    type="enum",
+                    tag=1,
+                    values=[
+                        ("open", 1),
+                        ("closed", 2),
+                    ],
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        "enum Status {\n"
+        "  STATUS_UNSPECIFIED = 0;\n"
+        "  STATUS_OPEN = 1;\n"
+        "  STATUS_CLOSED = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  Status status = 1;\n"
+        "}\n"
+    )
+
+def test_generate_proto_with_enum_and_primitive_fields() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="id",
+                    type="string",
+                    tag=1,
+                ),
+                make_field(
+                    name="status",
+                    type="enum",
+                    tag=2,
+                    values=[
+                        ("open", 1),
+                        ("closed", 2),
+                    ],
+                ),
+                make_field(
+                    name="active",
+                    type="boolean",
+                    tag=3,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        "enum Status {\n"
+        "  STATUS_UNSPECIFIED = 0;\n"
+        "  STATUS_OPEN = 1;\n"
+        "  STATUS_CLOSED = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  string id = 1;\n"
+        "  Status status = 2;\n"
+        "  bool active = 3;\n"
+        "}\n"
+    )
+
+def test_enum_field_name_is_converted_to_pascal_case() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="work_model",
+                    type="enum",
+                    tag=1,
+                    values=[
+                        ("remote", 1),
+                        ("hybrid", 2),
+                    ],
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        "enum WorkModel {\n"
+        "  WORK_MODEL_UNSPECIFIED = 0;\n"
+        "  WORK_MODEL_REMOTE = 1;\n"
+        "  WORK_MODEL_HYBRID = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  WorkModel work_model = 1;\n"
+        "}\n"
+    )
+
+def test_generate_multiple_enums_in_same_proto_file() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="status",
+                    type="enum",
+                    tag=1,
+                    values=[
+                        ("open", 1),
+                        ("closed", 2),
+                    ],
+                ),
+                make_field(
+                    name="work_model",
+                    type="enum",
+                    tag=2,
+                    values=[
+                        ("remote", 1),
+                        ("hybrid", 2),
+                    ],
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        "enum Status {\n"
+        "  STATUS_UNSPECIFIED = 0;\n"
+        "  STATUS_OPEN = 1;\n"
+        "  STATUS_CLOSED = 2;\n"
+        "}\n\n"
+        "enum WorkModel {\n"
+        "  WORK_MODEL_UNSPECIFIED = 0;\n"
+        "  WORK_MODEL_REMOTE = 1;\n"
+        "  WORK_MODEL_HYBRID = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  Status status = 1;\n"
+        "  WorkModel work_model = 2;\n"
+        "}\n"
+    )
+
+def test_enums_do_not_leak_between_generated_files() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="status",
+                    type="enum",
+                    tag=1,
+                    values=[
+                        ("open", 1),
+                        ("closed", 2),
+                    ],
+                ),
+            ],
+        ),
+        make_object(
+            name="Company",
+            fields=[
+                make_field(
+                    name="name",
+                    type="string",
+                    tag=1,
+                ),
+            ],
+        ),
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        "enum Status {\n"
+        "  STATUS_UNSPECIFIED = 0;\n"
+        "  STATUS_OPEN = 1;\n"
+        "  STATUS_CLOSED = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  Status status = 1;\n"
+        "}\n"
+    )
+
+    assert generated_files["company.proto"] == (
+        'syntax = "proto3";\n\n'
+        "message Company {\n"
+        "  string name = 1;\n"
+        "}\n"
+    )
+
+def test_generate_proto_with_enum_and_timestamp_import() -> None:
+    objects = [
+        make_object(
+            name="Job",
+            fields=[
+                make_field(
+                    name="status",
+                    type="enum",
+                    tag=1,
+                    values=[
+                        ("open", 1),
+                        ("closed", 2),
+                    ],
+                ),
+                make_field(
+                    name="created_at",
+                    type="timestamp",
+                    tag=2,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "google/protobuf/timestamp.proto";\n\n'
+        "enum Status {\n"
+        "  STATUS_UNSPECIFIED = 0;\n"
+        "  STATUS_OPEN = 1;\n"
+        "  STATUS_CLOSED = 2;\n"
+        "}\n\n"
+        "message Job {\n"
+        "  Status status = 1;\n"
+        "  google.protobuf.Timestamp created_at = 2;\n"
+        "}\n"
+    )
+

@@ -5,14 +5,31 @@ def make_field(
     type: str = "string",
     ref: str | None = None,
     required: bool = True,
-    values: list[str] | None = None,
+    values: list[str | tuple[str, int] | EnumValue] | None = None,
     sensitive: bool = False,
     tag: int | None = None      
 ) -> Field: 
-    enum_values = [
-        EnumValue(name=value)
-        for value in (values or [])
-    ]
+    enum_values: list[EnumValue] = []
+
+    for value in values or []:
+        if isinstance(value, EnumValue):
+            enum_values.append(value)
+        elif isinstance(value, tuple):
+            value_name, value_tag = value
+            enum_values.append(
+                EnumValue(
+                    name=value_name,
+                    tag=value_tag,
+                )
+            )
+        else:
+            enum_values.append(
+                EnumValue(
+                    name=value,
+                    tag=None,
+                )
+            )
+
     return Field(
         name=name, 
         type=type, 

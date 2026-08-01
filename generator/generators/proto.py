@@ -12,14 +12,17 @@ class ProtoGenerator(Generator):
         "string": ProtoType("string", None),
         "boolean": ProtoType("bool", None),
         "number": ProtoType("double", None),
-        "timestamp": ProtoType("google.protobuf.Timestamp", "google/protobuf/timestamp.proto")
+        "timestamp": ProtoType("google.protobuf.Timestamp", "google/protobuf/timestamp.proto"), 
+        "enum": ProtoType("enum", None)
     }
 
     _imports: set[str]
+    _enums: list[str]
 
     def __init__(self):
         self._imports = set()
-        
+        self._enums = []
+
     def _get_proto_type(
         self, 
         field_type: str
@@ -35,11 +38,39 @@ class ProtoGenerator(Generator):
         
         return converted_field.proto_type
 
+    def _to_pascal_case(self, value: str) -> str:
+        return "".join(
+            word.capitalize()
+            for word in value.split("_")
+        )
+    
+    def _generate_enum(
+        self,
+        field: Field
+    ) -> None:  
+        enum_values: list[str] = []
+        for value in field.values:
+            enum_values.append(f"  {field.name.upper()}_{value.name.upper()} = {value.tag};")
+
+        values = "\n".join(enum_values)
+        enum_proto_str = (
+            f"enum {self._to_pascal_case(field.name)} {{\n"
+            f"  {field.name.upper()}_UNSPECIFIED = 0;\n"
+            f"{values}\n"
+            f"}}"
+        )
+
+        self._enums.append(enum_proto_str)
+
     def _generate_field(
         self, 
         field: Field
     ) -> str:
         converted_field_type = self._get_proto_type(field_type=field.type)
+        if converted_field_type == "enum": 
+            self._generate_enum(field)
+            converted_field_type = self._to_pascal_case(field.name)
+
         return f"  {converted_field_type} {field.name} = {field.tag};" 
 
     def _generate_message(
@@ -67,14 +98,17 @@ class ProtoGenerator(Generator):
 
         for obj in objects:
             self._imports.clear()
+            self._enums.clear()
 
             message = self._generate_message(obj)
             imports = "\n".join(sorted(self._imports))
-
+            enums = "\n\n".join(self._enums)
             sections = ['syntax = "proto3";']
 
             if imports:
                 sections.append(imports)
+            if enums: 
+                sections.append(enums)
 
             sections.append(message)
 
