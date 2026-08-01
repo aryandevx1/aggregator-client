@@ -46,6 +46,10 @@ class EnumValidationError(ValidatorError):
     """Raised when an invalid enum is encountered"""
 
 
+class ValueTypeValidationError(ValidatorError):
+    """Raised when an invalid value_type is encountered"""
+
+
 class TagLockerError(Exception):
     """Base exception for tag-locking failures."""
 

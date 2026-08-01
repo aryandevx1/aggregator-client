@@ -6,6 +6,7 @@ from .errors import (
     KindValidationError, 
     TypeValidationError, 
     RefValidationError, 
+    ValueTypeValidationError,
     EnumValidationError
 )
 
@@ -116,6 +117,23 @@ class Validator:
                 f"object '{object_name}'"
             )
 
+    def _validate_field_value_type(
+        self, 
+        field: Field, 
+        object_name: str
+    ) -> None: 
+        if field.type == "array" and field.value_type is None: 
+            raise ValueTypeValidationError(
+                f"Array field '{field.name}' in object "
+                f"'{object_name}' must define 'value_type'"
+            )
+
+        if field.value_type is not None and field.type != "array": 
+            raise ValueTypeValidationError(
+                f"'value_type' is only supported for array fields; "
+                f"found on '{field.name}' in object '{object_name}'"
+            )
+
     def _validate_field_enum(
         self, 
         field: Field, 
@@ -153,6 +171,7 @@ class Validator:
             self._validate_field_type(field, object_name)
             self._validate_field_ref(field, object_name)
             self._validate_field_enum(field, object_name)
+            self._validate_field_value_type(field, object_name)
 
 
     def _validate_field_list(

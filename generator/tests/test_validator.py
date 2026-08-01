@@ -9,6 +9,7 @@ from generator.errors import (
     TypeValidationError,
     RefValidationError,
     EnumValidationError,
+    ValueTypeValidationError,
     ValidatorError
 )
 from .test_helpers import make_field, make_object
@@ -158,7 +159,6 @@ def test_same_field_name_in_different_objects_passes() -> None:
         "string",
         "boolean",
         "number",
-        "array",
         "timestamp",
     ],
 )
@@ -456,3 +456,52 @@ def test_empty_field_list() -> None:
         match="Object must contain at least one field"
     ): 
         Validator().validate([make_object()])
+
+def test_value_type_none_for_field_type_array() -> None:
+    objects = [
+        make_object(
+            fields=[
+                make_field(
+                    name="status",
+                    type="array",
+                ),
+            ],
+        ),
+    ]
+
+    with pytest.raises(
+        ValueTypeValidationError,
+        match=(
+            f"Array field 'status' in object "
+            f"'Job' must define 'value_type'"
+        ),
+    ):
+        Validator().validate(objects)
+
+@pytest.mark.parametrize(
+    "field_type", 
+    [
+        "string",
+        "boolean",
+        "number",
+        "timestamp",
+    ]
+)
+def test_value_type_string_for_field_type_not_array(field_type: str) -> None:
+    objects = [
+        make_object(
+            fields=[
+                make_field(
+                    name="status",
+                    type=field_type,
+                    value_type="string"
+                ),
+            ],
+        ),
+    ]
+
+    with pytest.raises(
+        ValueTypeValidationError,
+        match="'value_type' is only supported for array fields;",
+    ):
+        Validator().validate(objects)

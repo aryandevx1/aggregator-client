@@ -7,7 +7,8 @@ def make_field(
     required: bool = True,
     values: list[str | tuple[str, int] | EnumValue] | None = None,
     sensitive: bool = False,
-    tag: int | None = None      
+    tag: int | None = None, 
+    value_type: str | None = None      
 ) -> Field: 
     enum_values: list[EnumValue] = []
 
@@ -37,7 +38,8 @@ def make_field(
         required=required, 
         values=enum_values, 
         sensitive=sensitive, 
-        tag=tag
+        tag=tag, 
+        value_type=value_type
     )
 
 def make_object(
