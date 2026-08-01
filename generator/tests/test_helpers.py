@@ -1,4 +1,4 @@
-from generator.model import Field, Object
+from generator.model import Field, Object, EnumValue
 
 def make_field(
     name: str = "name",
@@ -9,12 +9,16 @@ def make_field(
     sensitive: bool = False,
     tag: int | None = None      
 ) -> Field: 
+    enum_values = [
+        EnumValue(name=value)
+        for value in (values or [])
+    ]
     return Field(
         name=name, 
         type=type, 
         ref=ref, 
         required=required, 
-        values=[] if values is None else values, 
+        values=enum_values, 
         sensitive=sensitive, 
         tag=tag
     )

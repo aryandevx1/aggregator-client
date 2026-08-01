@@ -133,7 +133,12 @@ class Validator:
                 f"'{object_name}' must define values"
             )
 
-        if field.type == "enum" and len(field.values) != len(set(field.values)):
+        value_names = [
+            value.name
+            for value in field.values
+        ]
+
+        if field.type == "enum" and len(value_names) != len(set(value_names)):
             raise EnumValidationError(
                 f"Enum field '{field.name}' in object '{object_name}' "
                 f"contains duplicate values"

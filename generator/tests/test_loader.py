@@ -3,6 +3,7 @@ import yaml
 from pathlib import Path
 from generator.errors import SchemaDirectoryError, SchemaStructureError
 from generator.loader import Loader
+from generator.model import EnumValue
 
 def test_missing_schema_directory(tmp_path: Path) -> None : 
     missing_dir = tmp_path / "missing"
@@ -215,8 +216,8 @@ def test_load_valid_schema(tmp_path: Path) -> None:
     assert user.fields[0].sensitive is True
 
     assert user.fields[1].values == [
-        "ACTIVE",
-        "INACTIVE",
+        EnumValue("ACTIVE"),
+        EnumValue("INACTIVE")
     ]
 
 def test_field_optional_properties_use_defaults(

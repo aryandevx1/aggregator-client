@@ -1,7 +1,7 @@
 import pathlib
 import yaml
 
-from .model import Object, Field
+from .model import Object, Field, EnumValue
 
 from .errors import (
     SchemaDirectoryError,
@@ -96,7 +96,9 @@ class Loader:
                 f"'values' at {location} must be a list"
             )
 
+        enum_values: list[EnumValue] = []
         for value in values: 
+            enum_values.append(EnumValue(value))
             if not isinstance(value, str): 
                 raise SchemaStructureError(
                     f"Every item in 'values' at {location} must be a string"
@@ -116,7 +118,7 @@ class Loader:
             name=name,
             type=field_type,
             ref=ref,
-            values=values,
+            values=enum_values,
             sensitive=sensitive,
             required=required
         )
