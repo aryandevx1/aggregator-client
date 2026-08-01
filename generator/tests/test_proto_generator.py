@@ -674,3 +674,63 @@ def test_generate_proto_with_composite_and_reference_fields() -> None:
         "  Company company = 2;\n"
         "}\n"
     )
+
+def test_generate_proto_with_string_array_field() -> None:
+    objects = [
+        make_object(
+            name="SavedFilter",
+            fields=[
+                make_field(
+                    name="keywords",
+                    type="array",
+                    value_type="string",
+                    tag=1,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["saved_filter.proto"] == (
+        'syntax = "proto3";\n\n'
+        "message SavedFilter {\n"
+        "  repeated string keywords = 1;\n"
+        "}\n"
+    )
+
+def test_generate_proto_with_array_and_primitive_fields() -> None:
+    objects = [
+        make_object(
+            name="SavedFilter",
+            fields=[
+                make_field(
+                    name="id",
+                    type="string",
+                    tag=1,
+                ),
+                make_field(
+                    name="keywords",
+                    type="array",
+                    value_type="string",
+                    tag=2,
+                ),
+                make_field(
+                    name="active",
+                    type="boolean",
+                    tag=3,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["saved_filter.proto"] == (
+        'syntax = "proto3";\n\n'
+        "message SavedFilter {\n"
+        "  string id = 1;\n"
+        "  repeated string keywords = 2;\n"
+        "  bool active = 3;\n"
+        "}\n"
+    )

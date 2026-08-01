@@ -22,6 +22,10 @@ class Validator:
         "reference",
     })
 
+    _ALLOWED_ARRAY_VALUE_TYPES = frozenset({
+        "string"
+    })
+
     _ALLOWED_OBJECT_KINDS = frozenset({
         "entity",
         "composite",
@@ -132,6 +136,12 @@ class Validator:
             raise ValueTypeValidationError(
                 f"'value_type' is only supported for array fields; "
                 f"found on '{field.name}' in object '{object_name}'"
+            )
+
+        if field.type == "array" and field.value_type not in self._ALLOWED_ARRAY_VALUE_TYPES: 
+            raise ValueTypeValidationError(
+                f"'value_type' can only be 'string' ; "
+                f"found '{field.value_type}' on '{field.name}' in object '{object_name}'"
             )
 
     def _validate_field_enum(

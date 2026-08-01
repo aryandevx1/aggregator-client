@@ -505,3 +505,30 @@ def test_value_type_string_for_field_type_not_array(field_type: str) -> None:
         match="'value_type' is only supported for array fields;",
     ):
         Validator().validate(objects)
+
+@pytest.mark.parametrize(
+    "value_type", 
+    [
+        "boolean",
+        "number",
+        "timestamp",
+    ]
+)
+def test_value_type_not_string_for_field_type_array(value_type: str) -> None:
+    objects = [
+        make_object(
+            fields=[
+                make_field(
+                    name="status",
+                    type="array",
+                    value_type=value_type
+                ),
+            ],
+        ),
+    ]
+
+    with pytest.raises(
+        ValueTypeValidationError,
+        match="'value_type' can only be 'string' ",
+    ):
+        Validator().validate(objects)

@@ -16,7 +16,8 @@ class ProtoGenerator(Generator):
         "timestamp": ProtoType("google.protobuf.Timestamp", "google/protobuf/timestamp.proto"), 
         "enum": ProtoType("enum", None), 
         "composite": ProtoType("composite", None), 
-        "reference": ProtoType("reference", None)
+        "reference": ProtoType("reference", None), 
+        "array": ProtoType("repeated string", None)
     }
 
     _imports: set[str]
