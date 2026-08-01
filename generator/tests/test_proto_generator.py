@@ -616,3 +616,61 @@ def test_composite_imports_do_not_leak_between_generated_files() -> None:
         "  string name = 1;\n"
         "}\n"
     )
+
+def test_generate_proto_with_reference_field() -> None:
+    objects = [
+        make_object(
+            name="Notification",
+            fields=[
+                make_field(
+                    name="user",
+                    type="reference",
+                    ref="User",
+                    tag=1,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["notification.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "user.proto";\n\n'
+        "message Notification {\n"
+        "  User user = 1;\n"
+        "}\n"
+    )
+
+def test_generate_proto_with_composite_and_reference_fields() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="location",
+                    type="composite",
+                    ref="Location",
+                    tag=1,
+                ),
+                make_field(
+                    name="company",
+                    type="reference",
+                    ref="Company",
+                    tag=2,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job_listing.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "company.proto";\n'
+        'import "location.proto";\n\n'
+        "message JobListing {\n"
+        "  Location location = 1;\n"
+        "  Company company = 2;\n"
+        "}\n"
+    )
