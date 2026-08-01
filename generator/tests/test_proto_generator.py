@@ -445,3 +445,174 @@ def test_generate_proto_with_enum_and_timestamp_import() -> None:
         "}\n"
     )
 
+def test_generate_proto_with_composite_field() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="location",
+                    type="composite",
+                    ref="Location",
+                    tag=1,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job_listing.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "location.proto";\n\n'
+        "message JobListing {\n"
+        "  Location location = 1;\n"
+        "}\n"
+    )
+
+def test_generate_proto_with_composite_and_primitive_fields() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="id",
+                    type="string",
+                    tag=1,
+                ),
+                make_field(
+                    name="location",
+                    type="composite",
+                    ref="Location",
+                    tag=2,
+                ),
+                make_field(
+                    name="active",
+                    type="boolean",
+                    tag=3,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job_listing.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "location.proto";\n\n'
+        "message JobListing {\n"
+        "  string id = 1;\n"
+        "  Location location = 2;\n"
+        "  bool active = 3;\n"
+        "}\n"
+    )
+
+def test_composite_import_is_not_duplicated() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="primary_location",
+                    type="composite",
+                    ref="Location",
+                    tag=1,
+                ),
+                make_field(
+                    name="secondary_location",
+                    type="composite",
+                    ref="Location",
+                    tag=2,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+    content = generated_files["job_listing.proto"]
+
+    assert content.count('import "location.proto";') == 1
+
+    assert content == (
+        'syntax = "proto3";\n\n'
+        'import "location.proto";\n\n'
+        "message JobListing {\n"
+        "  Location primary_location = 1;\n"
+        "  Location secondary_location = 2;\n"
+        "}\n"
+    )
+
+def test_generate_sorted_composite_imports() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="salary_range",
+                    type="composite",
+                    ref="SalaryRange",
+                    tag=1,
+                ),
+                make_field(
+                    name="location",
+                    type="composite",
+                    ref="Location",
+                    tag=2,
+                ),
+            ],
+        )
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job_listing.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "location.proto";\n'
+        'import "salary_range.proto";\n\n'
+        "message JobListing {\n"
+        "  SalaryRange salary_range = 1;\n"
+        "  Location location = 2;\n"
+        "}\n"
+    )
+
+def test_composite_imports_do_not_leak_between_generated_files() -> None:
+    objects = [
+        make_object(
+            name="JobListing",
+            fields=[
+                make_field(
+                    name="location",
+                    type="composite",
+                    ref="Location",
+                    tag=1,
+                ),
+            ],
+        ),
+        make_object(
+            name="Company",
+            fields=[
+                make_field(
+                    name="name",
+                    type="string",
+                    tag=1,
+                ),
+            ],
+        ),
+    ]
+
+    generated_files = ProtoGenerator().generate(objects)
+
+    assert generated_files["job_listing.proto"] == (
+        'syntax = "proto3";\n\n'
+        'import "location.proto";\n\n'
+        "message JobListing {\n"
+        "  Location location = 1;\n"
+        "}\n"
+    )
+
+    assert generated_files["company.proto"] == (
+        'syntax = "proto3";\n\n'
+        "message Company {\n"
+        "  string name = 1;\n"
+        "}\n"
+    )

@@ -1,6 +1,7 @@
 from .base import Generator
 from generator.model import Object, Field
 from dataclasses import dataclass
+from generator.naming import pascal_to_snake, snake_to_pascal
 
 @dataclass(frozen=True)
 class ProtoType: 
@@ -13,7 +14,8 @@ class ProtoGenerator(Generator):
         "boolean": ProtoType("bool", None),
         "number": ProtoType("double", None),
         "timestamp": ProtoType("google.protobuf.Timestamp", "google/protobuf/timestamp.proto"), 
-        "enum": ProtoType("enum", None)
+        "enum": ProtoType("enum", None), 
+        "composite": ProtoType("composite", None)
     }
 
     _imports: set[str]
@@ -37,12 +39,6 @@ class ProtoGenerator(Generator):
             self._imports.add(f'import "{converted_field.import_path}";')
         
         return converted_field.proto_type
-
-    def _to_pascal_case(self, value: str) -> str:
-        return "".join(
-            word.capitalize()
-            for word in value.split("_")
-        )
     
     def _generate_enum(
         self,
@@ -54,7 +50,7 @@ class ProtoGenerator(Generator):
 
         values = "\n".join(enum_values)
         enum_proto_str = (
-            f"enum {self._to_pascal_case(field.name)} {{\n"
+            f"enum {snake_to_pascal(field.name)} {{\n"
             f"  {field.name.upper()}_UNSPECIFIED = 0;\n"
             f"{values}\n"
             f"}}"
@@ -69,7 +65,11 @@ class ProtoGenerator(Generator):
         converted_field_type = self._get_proto_type(field_type=field.type)
         if converted_field_type == "enum": 
             self._generate_enum(field)
-            converted_field_type = self._to_pascal_case(field.name)
+            converted_field_type = snake_to_pascal(field.name)
+
+        if converted_field_type == "composite": 
+            converted_field_type = field.ref
+            self._imports.add(f'import "{pascal_to_snake(field.ref)}.proto";')
 
         return f"  {converted_field_type} {field.name} = {field.tag};" 
 
@@ -114,6 +114,6 @@ class ProtoGenerator(Generator):
 
             content = "\n\n".join(sections) + "\n"
 
-            generated_files[f"{obj.name.lower()}.proto"] = content
+            generated_files[f"{pascal_to_snake(obj.name)}.proto"] = content
 
         return generated_files
