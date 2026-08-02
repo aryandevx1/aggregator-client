@@ -13,3 +13,19 @@ def snake_to_pascal(name: str) -> str:
         part.capitalize()
         for part in name.split("_")
     )
+
+def snake_to_go_pascal(value: str) -> str:
+    initialisms = {
+        "id": "ID",
+        "url": "URL",
+        "api": "API",
+        "http": "HTTP",
+        "https": "HTTPS",
+        "ip": "IP",
+        "uuid": "UUID",
+    }
+
+    return "".join(
+        initialisms.get(part, part.capitalize())
+        for part in value.split("_")
+    )
