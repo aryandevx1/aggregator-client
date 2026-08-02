@@ -48,14 +48,14 @@ class ProtoGenerator(Generator):
     ) -> None:  
         enum_values: list[str] = []
         for value in field.values:
-            enum_values.append(f"  {field.name.upper()}_{value.name.upper()} = {value.tag};")
+            enum_values.append(f"    {field.name.upper()}_{value.name.upper()} = {value.tag};")
 
         values = "\n".join(enum_values)
         enum_proto_str = (
-            f"enum {snake_to_pascal(field.name)} {{\n"
-            f"  {field.name.upper()}_UNSPECIFIED = 0;\n"
+            f"  enum {snake_to_pascal(field.name)} {{\n"
+            f"    {field.name.upper()}_UNSPECIFIED = 0;\n"
             f"{values}\n"
-            f"}}"
+            f"  }}"
         )
 
         self._enums.append(enum_proto_str)
@@ -85,10 +85,19 @@ class ProtoGenerator(Generator):
         ]
 
         fields = "\n".join(field_list)
+        enums = "\n\n".join(self._enums)
+
+        body_sections: list[str] = []
+        if enums: 
+            body_sections.append(enums)
+
+        body_sections.append(fields)
+
+        body = "\n\n".join(body_sections)
 
         return (
             f"message {current_object.name} {{\n"
-            f"{fields}\n"
+            f"{body}\n"
             f"}}"
         )
 
@@ -104,13 +113,10 @@ class ProtoGenerator(Generator):
 
             message = self._generate_message(obj)
             imports = "\n".join(sorted(self._imports))
-            enums = "\n\n".join(self._enums)
             sections = ['syntax = "proto3";']
 
             if imports:
                 sections.append(imports)
-            if enums: 
-                sections.append(enums)
 
             sections.append(message)
 

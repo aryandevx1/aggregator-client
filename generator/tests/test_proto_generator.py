@@ -201,7 +201,7 @@ def test_timestamp_import_is_not_duplicated() -> None:
         "  google.protobuf.Timestamp updated_at = 2;\n"
         "}\n"
     )
-
+    
 def test_generate_proto_with_enum_field() -> None:
     objects = [
         make_object(
@@ -224,12 +224,12 @@ def test_generate_proto_with_enum_field() -> None:
 
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
-        "enum Status {\n"
-        "  STATUS_UNSPECIFIED = 0;\n"
-        "  STATUS_OPEN = 1;\n"
-        "  STATUS_CLOSED = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum Status {\n"
+        "    STATUS_UNSPECIFIED = 0;\n"
+        "    STATUS_OPEN = 1;\n"
+        "    STATUS_CLOSED = 2;\n"
+        "  }\n\n"
         "  Status status = 1;\n"
         "}\n"
     )
@@ -266,12 +266,12 @@ def test_generate_proto_with_enum_and_primitive_fields() -> None:
 
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
-        "enum Status {\n"
-        "  STATUS_UNSPECIFIED = 0;\n"
-        "  STATUS_OPEN = 1;\n"
-        "  STATUS_CLOSED = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum Status {\n"
+        "    STATUS_UNSPECIFIED = 0;\n"
+        "    STATUS_OPEN = 1;\n"
+        "    STATUS_CLOSED = 2;\n"
+        "  }\n\n"
         "  string id = 1;\n"
         "  Status status = 2;\n"
         "  bool active = 3;\n"
@@ -300,12 +300,12 @@ def test_enum_field_name_is_converted_to_pascal_case() -> None:
 
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
-        "enum WorkModel {\n"
-        "  WORK_MODEL_UNSPECIFIED = 0;\n"
-        "  WORK_MODEL_REMOTE = 1;\n"
-        "  WORK_MODEL_HYBRID = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum WorkModel {\n"
+        "    WORK_MODEL_UNSPECIFIED = 0;\n"
+        "    WORK_MODEL_REMOTE = 1;\n"
+        "    WORK_MODEL_HYBRID = 2;\n"
+        "  }\n\n"
         "  WorkModel work_model = 1;\n"
         "}\n"
     )
@@ -341,17 +341,17 @@ def test_generate_multiple_enums_in_same_proto_file() -> None:
 
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
-        "enum Status {\n"
-        "  STATUS_UNSPECIFIED = 0;\n"
-        "  STATUS_OPEN = 1;\n"
-        "  STATUS_CLOSED = 2;\n"
-        "}\n\n"
-        "enum WorkModel {\n"
-        "  WORK_MODEL_UNSPECIFIED = 0;\n"
-        "  WORK_MODEL_REMOTE = 1;\n"
-        "  WORK_MODEL_HYBRID = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum Status {\n"
+        "    STATUS_UNSPECIFIED = 0;\n"
+        "    STATUS_OPEN = 1;\n"
+        "    STATUS_CLOSED = 2;\n"
+        "  }\n\n"
+        "  enum WorkModel {\n"
+        "    WORK_MODEL_UNSPECIFIED = 0;\n"
+        "    WORK_MODEL_REMOTE = 1;\n"
+        "    WORK_MODEL_HYBRID = 2;\n"
+        "  }\n\n"
         "  Status status = 1;\n"
         "  WorkModel work_model = 2;\n"
         "}\n"
@@ -389,12 +389,12 @@ def test_enums_do_not_leak_between_generated_files() -> None:
 
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
-        "enum Status {\n"
-        "  STATUS_UNSPECIFIED = 0;\n"
-        "  STATUS_OPEN = 1;\n"
-        "  STATUS_CLOSED = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum Status {\n"
+        "    STATUS_UNSPECIFIED = 0;\n"
+        "    STATUS_OPEN = 1;\n"
+        "    STATUS_CLOSED = 2;\n"
+        "  }\n\n"
         "  Status status = 1;\n"
         "}\n"
     )
@@ -405,6 +405,7 @@ def test_enums_do_not_leak_between_generated_files() -> None:
         "  string name = 1;\n"
         "}\n"
     )
+
 
 def test_generate_proto_with_enum_and_timestamp_import() -> None:
     objects = [
@@ -434,12 +435,12 @@ def test_generate_proto_with_enum_and_timestamp_import() -> None:
     assert generated_files["job.proto"] == (
         'syntax = "proto3";\n\n'
         'import "google/protobuf/timestamp.proto";\n\n'
-        "enum Status {\n"
-        "  STATUS_UNSPECIFIED = 0;\n"
-        "  STATUS_OPEN = 1;\n"
-        "  STATUS_CLOSED = 2;\n"
-        "}\n\n"
         "message Job {\n"
+        "  enum Status {\n"
+        "    STATUS_UNSPECIFIED = 0;\n"
+        "    STATUS_OPEN = 1;\n"
+        "    STATUS_CLOSED = 2;\n"
+        "  }\n\n"
         "  Status status = 1;\n"
         "  google.protobuf.Timestamp created_at = 2;\n"
         "}\n"
