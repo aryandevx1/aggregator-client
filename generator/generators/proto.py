@@ -16,7 +16,7 @@ class ProtoGenerator(Generator):
         "timestamp": ProtoType("google.protobuf.Timestamp", "google/protobuf/timestamp.proto"), 
         "enum": ProtoType("enum", None), 
         "composite": ProtoType("composite", None), 
-        "reference": ProtoType("reference", None), 
+        "reference": ProtoType("string", None), 
         "array": ProtoType("repeated string", None)
     }
 
@@ -69,7 +69,7 @@ class ProtoGenerator(Generator):
             self._generate_enum(field)
             converted_field_type = snake_to_pascal(field.name)
 
-        if converted_field_type in ["composite", "reference"]: 
+        if converted_field_type == "composite": 
             converted_field_type = field.ref
             self._imports.add(f'import "{pascal_to_snake(field.ref)}.proto";')
 

@@ -636,9 +636,8 @@ def test_generate_proto_with_reference_field() -> None:
 
     assert generated_files["notification.proto"] == (
         'syntax = "proto3";\n\n'
-        'import "user.proto";\n\n'
         "message Notification {\n"
-        "  User user = 1;\n"
+        "  string user = 1;\n"
         "}\n"
     )
 
@@ -667,11 +666,10 @@ def test_generate_proto_with_composite_and_reference_fields() -> None:
 
     assert generated_files["job_listing.proto"] == (
         'syntax = "proto3";\n\n'
-        'import "company.proto";\n'
         'import "location.proto";\n\n'
         "message JobListing {\n"
         "  Location location = 1;\n"
-        "  Company company = 2;\n"
+        "  string company = 2;\n"
         "}\n"
     )
 
