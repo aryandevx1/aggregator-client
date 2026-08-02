@@ -20,12 +20,28 @@ class ProtoGenerator(Generator):
         "array": ProtoType("repeated string", None)
     }
 
+    _OPTIONAL_FIELD_TYPES = {
+        "string",
+        "boolean",
+        "number",
+        "reference",
+    }
+
     _imports: set[str]
     _enums: list[str]
 
     def __init__(self):
         self._imports = set()
         self._enums = []
+
+    def _get_field_modifier(
+        self,
+        field: Field,
+    ) -> str:
+        if field.type in self._OPTIONAL_FIELD_TYPES:
+            return "optional"
+
+        return ""
 
     def _get_proto_type(
         self, 
@@ -73,7 +89,18 @@ class ProtoGenerator(Generator):
             converted_field_type = field.ref
             self._imports.add(f'import "{pascal_to_snake(field.ref)}.proto";')
 
-        return f"  {converted_field_type} {field.name} = {field.tag};" 
+        modifier = self._get_field_modifier(field)
+
+        if modifier:
+            return (
+                f"  {modifier} {converted_field_type} "
+                f"{field.name} = {field.tag};"
+            )
+
+        return (
+            f"  {converted_field_type} "
+            f"{field.name} = {field.tag};"
+        )
 
     def _generate_message(
         self, 
