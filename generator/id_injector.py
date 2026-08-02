@@ -27,4 +27,4 @@ class EntityIdInjector:
             if self._has_id_field(obj.fields): 
                 continue
 
-            obj.fields.append(self._create_id_field())
+            obj.fields.insert(0, self._create_id_field())
